@@ -84,7 +84,7 @@ using (IServiceScope scope = app.Services.CreateScope())
     await DbSeeder.SeedRolesAsync(services);
 
     
-    await DbSeeder.EnsureAdminUserAsync(services, "freimanisniklavs@gmail.com");
+    await DbSeeder.EnsureAdminUserAsync(services, "test@gmail.com");
 }
 
 app.Run();
