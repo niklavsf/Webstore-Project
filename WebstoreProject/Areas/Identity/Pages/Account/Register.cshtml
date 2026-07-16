@@ -1,0 +1,81 @@
+﻿@page
+@model RegisterModel
+
+@{
+    ViewData["Title"] = "Reģistrēties";
+}
+
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-8 col-lg-5">
+
+            <div class="text-center mb-4">
+                <h1 class="h3 mb-1">Reģistrēties</h1>
+                <div class="text-muted">Izveido kontu, lai veiktu pasūtījumus NiklavsMart.</div>
+            </div>
+
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+
+                    <form id="registerForm" asp-route-returnUrl="@Model.ReturnUrl" method="post">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2" role="alert"></div>
+
+                        <div class="form-floating mb-3">
+                            <input asp-for="Input.Email"
+                                   class="form-control"
+                                   autocomplete="username"
+                                   aria-required="true"
+                                   placeholder="name@example.com" 
+                                   />
+                            <label asp-for="Input.Email">E-pasts</label>
+                            <span asp-validation-for="Input.Email" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-floating mb-3">
+                            <input asp-for="Input.Password"
+                                   class="form-control"
+                                   autocomplete="new-password"
+                                   aria-required="true"
+                                   placeholder="Parole" />
+                            <label asp-for="Input.Password">Parole</label>
+                            <span asp-validation-for="Input.Password" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-floating mb-3">
+                            <input asp-for="Input.ConfirmPassword"
+                                   class="form-control"
+                                   autocomplete="new-password"
+                                   aria-required="true"
+                                   placeholder="Atkārtot paroli" />
+                            <label asp-for="Input.ConfirmPassword">Atkārtot paroli</label>
+                            <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
+                        </div>
+
+                        <button id="registerSubmit" type="submit" class="w-100 btn btn-danger btn-lg">
+                            Izveidot kontu
+                        </button>
+
+                        <div class="text-center mt-3">
+                            <span class="text-muted">Jau ir konts?</span>
+                            <a asp-page="./Login" asp-route-returnUrl="@Model.ReturnUrl" class="text-decoration-none ms-1">
+                                Pieslēgties
+                            </a>
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+
+            <div class="text-center mt-3">
+                <a asp-controller="Home" asp-action="Index" class="text-decoration-none text-muted">
+                    ← Atpakaļ uz veikalu
+                </a>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

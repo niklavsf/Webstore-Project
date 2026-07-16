@@ -1,0 +1,50 @@
+﻿@page
+@model LogoutModel
+
+@{
+    ViewData["Title"] = "Iziet";
+}
+
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-8 col-lg-5">
+
+            <div class="card shadow-sm">
+                <div class="card-body p-4 text-center">
+
+                    @if (User.Identity?.IsAuthenticated ?? false)
+                    {
+                        <h1 class="h4 mb-2">Iziet no profila</h1>
+                        <div class="text-muted mb-4">Vai tiešām vēlies iziet no sava konta?</div>
+
+                        <form asp-area="Identity"
+                              asp-page="/Account/Logout"
+                              asp-route-returnUrl="@Url.Page("/", new { area = "" })"
+                              method="post">
+                            <button type="submit" class="btn btn-outline-danger btn-lg w-100">
+                                Iziet
+                            </button>
+                        </form>
+
+                        <div class="mt-3">
+                            <a asp-controller="Home" asp-action="Index" class="text-decoration-none text-muted">
+                                ← Atpakaļ uz veikalu
+                            </a>
+                        </div>
+                    }
+                    else
+                    {
+                        <h1 class="h4 mb-2">Tu esi izgājis</h1>
+                        <div class="text-muted mb-4">Veiksmīgi izdevās iziet no konta.</div>
+
+                        <a asp-controller="Home" asp-action="Index" class="btn btn-danger w-100">
+                            Uz sākumlapu
+                        </a>
+                    }
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>

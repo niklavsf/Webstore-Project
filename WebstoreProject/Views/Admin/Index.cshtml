@@ -1,0 +1,594 @@
+﻿@model WebstoreProject.Models.Admin
+@using WebstoreProject.Models
+
+@{
+    ViewData["Title"] = "Admin";
+    string tab = string.IsNullOrWhiteSpace(Model.Tab) ? "Products" : Model.Tab;
+}
+
+<div class="container-fluid mt-4 px-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Admin</h2>
+        <a class="btn btn-secondary" asp-controller="Home" asp-action="Index">Atgriezties</a>
+    </div>
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">@TempData["Error"]</div>
+    }
+
+    <div class="row g-3">
+        <!-- sidebar -->
+        <div class="col-lg-3">
+            <div class="list-group">
+                <a class="list-group-item list-group-item-action @(tab=="Products" ? "active" : "")"
+                   asp-controller="Admin" asp-action="Index" asp-route-tab="Products">Preces</a>
+
+                <a class="list-group-item list-group-item-action @(tab=="Categories" ? "active" : "")"
+                   asp-controller="Admin" asp-action="Index" asp-route-tab="Categories">Kategorijas</a>
+
+                <a class="list-group-item list-group-item-action @(tab=="Brands" ? "active" : "")"
+                   asp-controller="Admin" asp-action="Index" asp-route-tab="Brands">Ražotāji</a>
+
+                <a class="list-group-item list-group-item-action @(tab=="DeliveryTypes" ? "active" : "")"
+                   asp-controller="Admin" asp-action="Index" asp-route-tab="DeliveryTypes">Piegādes iespējas</a>
+                <a class="list-group-item list-group-item-action @(tab=="Orders" ? "active" : "")"
+                   asp-controller="Admin" asp-action="Index" asp-route-tab="Orders">Pasūtījumi</a>
+
+            </div>
+        </div>
+
+        <!-- content -->
+        <div class="col-lg-9">
+            <!-- produkti -->
+            @if (tab == "Products")
+            {
+                <div class="card p-3 mb-3">
+                    <h4 class="mb-3">Pievienot preci</h4>
+
+                    <form method="post" asp-action="AddProduct">
+                        <input type="hidden" name="tab" value="Products" />
+
+                        <div class="row g-2">
+                            <div class="col-md-6">
+                                <label class="form-label">Nosaukums</label>
+                                <input class="form-control" name="Name" required />
+                            </div>
+
+                            <div class="col-md-3">
+                                <label class="form-label">Cena</label>
+                                <input class="form-control" name="Price" type="text" inputmode="decimal" placeholder="1.99" />
+                            </div>
+
+                            <div class="col-md-3">
+                                <label class="form-label">Atlaide %</label>
+                                <input class="form-control" name="DiscountPercent" type="number" min="0" max="90" step="1" value="0" />
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Kategorija</label>
+                                <select class="form-select" name="CategoryId" required>
+                                    @foreach (Category c in Model.Categories)
+                                    {
+                                        <option value="@c.CategoryId">@c.CategoryId - @c.Name</option>
+                                    }
+                                </select>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Ražotājs</label>
+                                <select class="form-select" name="BrandId">
+                                    <option value="">(None)</option>
+                                    @foreach (Brand b in Model.Brands)
+                                    {
+                                        <option value="@b.BrandId">@b.Name</option>
+                                    }
+                                </select>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label">Noliktavā</label>
+                                <input class="form-control" name="StockQty" type="number" value="0" />
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label">Lielums</label>
+                                <select class="form-select" name="UnitType">
+                                    <option value="pcs">gab</option>
+                                    <option value="g">g</option>
+                                    <option value="kg">kg</option>
+                                    <option value="ml">ml</option>
+                                    <option value="l">l</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label">Daudzums</label>
+                                <input class="form-control" name="UnitSize" value="1" />
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Attēla URL</label>
+                                <input class="form-control" name="ImageUrl" />
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Daudzums (teksta veidā/pagaidu)</label>
+                                <input class="form-control" name="AmountText" placeholder="e.g. 450g, 1L" />
+                            </div>
+
+                            <div class="col-md-12">
+                                <label class="form-label">Apraksts</label>
+                                <textarea class="form-control" name="Description"></textarea>
+                            </div>
+
+                            <div class="col-md-12">
+                                <div class="form-check mt-2">
+                                    <input class="form-check-input" type="checkbox" name="IsActive" value="true" checked />
+                                    <label class="form-check-label">Pieejams</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button class="btn btn-success mt-3" type="submit">Add product</button>
+                    </form>
+                </div>
+
+                <div class="card p-3">
+                    <h4 class="mb-3">Rediģēt preces</h4>
+
+                    <div class="table-responsive">
+                        <table class="table table-sm table-striped align-middle">
+                            <thead>
+                                <tr>
+                                    <th style="width:60px;">Id</th>
+                                    <th style="min-width:220px;">Nosaukums</th>
+                                    <th style="min-width:160px;">Kateogorija</th>
+                                    <th style="min-width:140px;">Ražotājs</th>
+                                    <th style="width:150px;">Cena</th>
+                                    <th style="width:70px;">Atlaide%</th>
+@*                                     <th style="width:90px;">Stock</th>
+                                    <th style="width:90px;">Unit</th>
+                                    <th style="width:90px;">Size</th> *@
+                                    <th style="width:90px;">Pieejams</th>
+                                    <th style="width:240px;"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (Product p in Model.Products)
+                                {
+                                    <tr>
+                                        <form method="post" asp-action="UpdateProduct">
+                                            <input type="hidden" name="tab" value="Products" />
+                                            <input type="hidden" name="productId" value="@p.ProductId" />
+
+                                        <td>@p.ProductId</td>
+
+                                        <td>
+                                            <input class="form-control form-control-sm" name="name" value="@p.Name" />
+                                        </td>
+
+                                        <td>
+                                            <select class="form-select form-select-sm" name="categoryId">
+                                                    @foreach (Category c in Model.Categories)
+                                                    {
+                                                        if (c.CategoryId == p.CategoryId)
+                                                        {
+                                                        <option value="@c.CategoryId" selected>@c.Name</option>
+                                                        }
+                                                        else
+                                                        {
+                                                        <option value="@c.CategoryId">@c.Name</option>
+                                                        }
+                                                    }
+                                            </select>
+                                        </td>
+
+                                        <td>
+                                            <select class="form-select form-select-sm" name="brandId">
+                                                <option value="">(None)</option>
+                                                    @foreach (Brand b in Model.Brands)
+                                                    {
+                                                        if (p.BrandId.HasValue && b.BrandId == p.BrandId.Value)
+                                                        {
+                                                        <option value="@b.BrandId" selected>@b.Name</option>
+                                                        }
+                                                        else
+                                                        {
+                                                        <option value="@b.BrandId">@b.Name</option>
+                                                        }
+                                                    }
+                                            </select>
+                                        </td>
+
+                                        <td>
+                                            <input class="form-control form-control-sm" style="width:70px" name="Price" value="@p.Price.ToString("0.00")" />
+                                        </td>
+
+                                        <td>
+                                            <input class="form-control form-control-sm" name="DiscountPercent" value="@p.DiscountPercent" />
+                                        </td>
+@* 
+                                        <td>
+                                            <input class="form-control form-control-sm" name="stockQty" value="@p.StockQty" />
+                                        </td>
+
+                                        <td>
+                                            <input class="form-control form-control-sm" name="unitType" value="@p.UnitType" />
+                                        </td>
+
+                                        <td>
+                                            <input class="form-control form-control-sm" name="unitSize" value="@p.UnitSize" />
+                                        </td> *@
+
+                                        <td class="text-center">
+                                            <input class="form-check-input" type="checkbox" name="isActive" value="true" @(p.IsActive ? "checked" : "") />
+                                        </td> 
+
+                                        <td class="d-flex gap-2">
+                                            <button class="btn btn-sm btn-outline-primary" type="submit">Saglabāt</button>
+
+                                            <a class="btn btn-sm btn-outline-secondary"
+                                               asp-controller="Product"
+                                               asp-action="Details"
+                                               asp-route-id="@p.ProductId">
+                                                Apskatīt
+                                            </a>
+
+                                            <form method="post" asp-action="DeleteProduct" class="d-inline">
+                                                <input type="hidden" name="tab" value="Products" />
+                                                <input type="hidden" name="id" value="@p.ProductId" />
+                                                <button class="btn btn-sm btn-danger" type="submit"
+                                                        onclick="return confirm('Delete product?');">
+                                                    Dzēst
+                                                </button>
+                                            </form>
+                                        </td>
+
+                                        </form>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            }
+
+            <!-- kategorijas -->
+            @if (tab == "Categories")
+            {
+                <div class="card p-3 mb-3">
+                    <h4 class="mb-3">Pievienot kategoriju</h4>
+
+                    <form method="post" asp-action="AddCategory">
+                        <input type="hidden" name="tab" value="Categories" />
+
+                        <div class="row g-2">
+                            <div class="col-md-4">
+                                <label class="form-label">Iepriekšējais atzars</label>
+                                <select class="form-select" name="ParentId">
+                                    <option value="">(Top level)</option>
+                                    @foreach (Category c in Model.Categories)
+                                    {
+                                        <option value="@c.CategoryId">@c.CategoryId - @c.Name</option>
+                                    }
+                                </select>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label">Nosaukums</label>
+                                <input class="form-control" name="Name" required />
+                            </div>
+
+                            <div class="col-md-2">
+                                <label class="form-label">Sort</label>
+                                <input class="form-control" name="SortOrder" type="number" value="0" />
+                            </div>
+
+                            <div class="col-md-2 d-flex align-items-end">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="IsActive" value="true" checked />
+                                    <label class="form-check-label">Active</label>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Ikonas URL</label>
+                                <input class="form-control" name="IconUrl" />
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Apraksts</label>
+                                <input class="form-control" name="Description" />
+                            </div>
+                        </div>
+
+                        <button class="btn btn-success mt-3" type="submit">Pievienot kategoriju</button>
+                    </form>
+                </div>
+
+                <div class="card p-3">
+                    <h4 class="mb-3">Rediģēt kategorijas</h4>
+
+                    <div class="table-responsive">
+                        <table class="table table-sm table-striped align-middle">
+                            <thead>
+                                <tr>
+                                    <th style="width:60px;">Id</th>
+                                    <th style="min-width:240px;">Nosaukums</th>
+                                    <th style="min-width:220px;">Atzars</th>
+                                    <th style="width:80px;">Sort</th>
+                                    <th style="width:80px;">Pieejams</th>
+                                    <th style="min-width:260px;">Ikonas Url</th>
+                                    <th style="width:200px;"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (Category c in Model.Categories)
+                                {
+                                    <tr>
+                                        <form method="post" asp-action="UpdateCategory">
+                                            <input type="hidden" name="tab" value="Categories" />
+                                            <input type="hidden" name="categoryId" value="@c.CategoryId" />
+
+                                        <td>@c.CategoryId</td>
+
+                                        <td>
+                                            <input class="form-control form-control-sm" name="name" value="@c.Name" />
+                                        </td>
+
+                                        <td>
+                                            <select class="form-select form-select-sm" name="parentId">
+                                                <option value="">(Top level)</option>
+                                                    @foreach (Category p in Model.Categories)
+                                                    {
+                                                        if (c.ParentId.HasValue && p.CategoryId == c.ParentId.Value)
+                                                        {
+                                                        <option value="@p.CategoryId" selected>@p.Name</option>
+                                                        }
+                                                        else
+                                                        {
+                                                        <option value="@p.CategoryId">@p.Name</option>
+                                                        }
+                                                    }
+                                            </select>
+                                        </td>
+
+                                        <td>
+                                            <input class="form-control form-control-sm" name="sortOrder" value="@c.SortOrder" />
+                                        </td>
+
+                                        <td class="text-center">
+                                            <input class="form-check-input" type="checkbox" name="isActive" value="true" @(c.IsActive ? "checked" : "") />
+                                        </td>
+
+                                        <td>
+                                            <input class="form-control form-control-sm" name="iconUrl" value="@c.IconUrl" />
+                                        </td>
+
+                                        <td class="d-flex gap-2">
+                                            <button class="btn btn-sm btn-outline-primary" type="submit">Save</button>
+
+                                            <form method="post" asp-action="DeleteCategory" class="d-inline">
+                                                <input type="hidden" name="tab" value="Categories" />
+                                                <input type="hidden" name="id" value="@c.CategoryId" />
+                                                <button class="btn btn-sm btn-danger" type="submit"
+                                                        onclick="return confirm('Delete category?');">
+                                                    Delete
+                                                </button>
+                                            </form>
+                                        </td>
+
+                                        </form>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            }
+
+            <!-- razotaji -->
+            @if (tab == "Brands")
+            {
+                <div class="card p-3 mb-3">
+                    <h4 class="mb-3">Pievienot</h4>
+
+                    <form method="post" asp-action="AddBrand" class="d-flex gap-2">
+                        <input type="hidden" name="tab" value="Brands" />
+                        <input class="form-control" name="name" placeholder="Brand name" />
+                        <button class="btn btn-success" type="submit">Pievienot</button>
+                    </form>
+                </div>
+
+                <div class="card p-3">
+                    <h4 class="mb-3">Rediģēt</h4>
+
+                    <table class="table table-sm table-striped align-middle">
+                        <thead>
+                            <tr>
+                                <th style="width:80px;">Id</th>
+                                <th>Name</th>
+                                <th style="width:220px;"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (Brand b in Model.Brands)
+                            {
+                                <tr>
+                                    <form method="post" asp-action="UpdateBrand">
+                                        <input type="hidden" name="tab" value="Brands" />
+                                        <input type="hidden" name="brandId" value="@b.BrandId" />
+
+                                    <td>@b.BrandId</td>
+                                    <td>
+                                        <input class="form-control form-control-sm" name="name" value="@b.Name" />
+                                    </td>
+                                    <td class="d-flex gap-2">
+                                        <button class="btn btn-sm btn-outline-primary" type="submit">Save</button>
+
+                                        <form method="post" asp-action="DeleteBrand" class="d-inline">
+                                            <input type="hidden" name="tab" value="Brands" />
+                                            <input type="hidden" name="id" value="@b.BrandId" />
+                                            <button class="btn btn-sm btn-danger" type="submit"
+                                                    onclick="return confirm('Delete brand?');">
+                                                Delete
+                                            </button>
+                                        </form>
+                                    </td>
+
+                                    </form>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+
+            <!-- piegades opcijas -->
+            @if (tab == "DeliveryTypes")
+            {
+                <div class="card p-3 mb-3">
+                    <h4 class="mb-3">Piegādes iespējas</h4>
+
+                    <form method="post" asp-action="AddDeliveryType">
+                        <input type="hidden" name="tab" value="DeliveryTypes" />
+
+                        <div class="row g-2">
+                            <div class="col-md-6">
+                                <label class="form-label">Nosaukums</label>
+                                <input class="form-control" name="name" required />
+                            </div>
+
+                            <div class="col-md-3">
+                                <label class="form-label">Cena</label>
+                                <input class="form-control" name="price" type="text" inputmode="decimal" placeholder="2.99" />
+                            </div>
+
+                            <div class="col-md-3 d-flex align-items-end">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="isActive" value="true" checked />
+                                    <label class="form-check-label">Pieejams</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button class="btn btn-success mt-3" type="submit">Pievienot</button>
+                    </form>
+                </div>
+                <div class="card p-3">
+                    <h4 class="mb-3">Piegādes iespējas</h4>
+
+                    <table class="table table-sm table-striped align-middle">
+                        <thead>
+                            <tr>
+                                <th style="width:80px;">Id</th>
+                                <th>Nosaukums</th>
+                                <th style="width:140px;">Cena</th>
+                                <th style="width:90px;">Pieejams</th>
+                                <th style="width:220px;"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (DeliveryType d in Model.DeliveryTypes)
+                            {
+                                <tr>
+                                    <form method="post" asp-action="UpdateDeliveryType">
+                                        <input type="hidden" name="tab" value="DeliveryTypes" />
+                                        <input type="hidden" name="deliveryTypeId" value="@d.DeliveryTypeId" />
+
+                                    <td>@d.DeliveryTypeId</td>
+                                    <td><input class="form-control form-control-sm" name="name" value="@d.Name" /></td>
+                                    <td><input class="form-control form-control-sm" name="price" value="@d.Price.ToString("0.00")" /></td>
+                                    <td class="text-center">
+                                        <input class="form-check-input" type="checkbox" name="isActive" value="true" @(d.IsActive ? "checked" : "") />
+                                    </td>
+
+                                    <td class="d-flex gap-2">
+                                        <button class="btn btn-sm btn-outline-primary" type="submit">Saglabāt</button>
+
+                                        <form method="post" asp-action="DeleteDeliveryType" class="d-inline">
+                                            <input type="hidden" name="tab" value="DeliveryTypes" />
+                                            <input type="hidden" name="id" value="@d.DeliveryTypeId" />
+                                            <button class="btn btn-sm btn-danger" type="submit"
+                                                    onclick="return confirm('Delete delivery type?');">
+                                                Dzēst
+                                            </button>
+                                        </form>
+                                    </td>
+
+                                    </form>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+
+            @if (tab == "Orders")
+            {
+                <div class="card p-3">
+                    <h4 class="mb-3">Orders</h4>
+
+                    <div class="table-responsive">
+                        <table class="table table-sm table-striped align-middle">
+                            <thead>
+                                <tr>
+                                    <th style="width:80px;">Id</th>
+                                    <th style="width:160px;">Lietotājs</th>
+                                    <th style="width:140px;">Statuss</th>
+                                    <th style="width:140px;">Piegāde</th>
+                                    <th style="width:120px;">Maksa</th>
+                                    <th style="width:140px;">Kopā</th>
+                                    <th style="min-width:240px;">Adrese</th>
+                                    <th style="width:160px;"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (Order o in Model.Orders)
+                                {
+                                    <tr>
+                                        <td>@o.OrderId</td>
+                                        <td>@o.UserId</td>
+
+                                        <td style="width: 60px">
+                                            <form method="post" asp-action="UpdateOrderStatus" class="d-flex gap-2 m-0" >
+                                                <input type="hidden" name="tab" value="Orders" />
+                                                <input type="hidden" name="orderId" value="@o.OrderId" />
+
+                                                <select class="form-select form-select-sm" name="status" style="width: 120px">
+                                                    <option value="New" selected="@(o.Status == "New")">New</option>
+                                                    <option value="Processing" selected="@(o.Status == "Processing")">Processing</option>
+                                                    <option value="Shipped" selected="@(o.Status == "Shipped")">Shipped</option>
+                                                    <option value="Delivered" selected="@(o.Status == "Delivered")">Delivered</option>
+                                                    <option value="Cancelled" selected="@(o.Status == "Cancelled")">Cancelled</option>
+                                                </select>
+
+                                                <button class="btn btn-sm btn-outline-primary" type="submit">Saglabāt</button>
+                                            </form>
+                                        </td>
+
+                                        <td>@(o.DeliveryType != null ? o.DeliveryType.Name : "—")</td>
+                                        <td>€@o.DeliveryFee.ToString("0.00")</td>
+                                        <td>€@o.TotalPrice.ToString("0.00")</td>
+                                        <td>@o.DeliveryAddress</td>
+
+                                        <td>
+                                            <a class="btn btn-sm btn-outline-secondary"
+                                               asp-controller="Admin"
+                                               asp-action="OrderDetails"
+                                               asp-route-id="@o.OrderId">
+                                                Atvērt
+                                            </a>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            }
+
+        </div>
+    </div>
+</div>

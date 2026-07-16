@@ -1,0 +1,31 @@
+﻿@model List<WebstoreProject.Models.Category>
+@using WebstoreProject.Models
+
+<ul class="list-group">
+    @foreach (Category c in Model)
+    {
+        <li class="list-group-item">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <strong>@c.Name</strong>
+                    <span class="text-muted small"> (Id: @c.CategoryId)</span>
+                </div>
+
+                <form method="post" asp-action="DeleteCategory" class="m-0">
+                    <input type="hidden" name="id" value="@c.CategoryId" />
+                    <button class="btn btn-sm btn-outline-danger" type="submit"
+                            onclick="return confirm('Delete category? Child categories will also be deleted.');">
+                        Delete
+                    </button>
+                </form>
+            </div>
+
+            @if (c.Children != null && c.Children.Count > 0)
+            {
+                <div class="mt-2 ms-3">
+                    @await Html.PartialAsync("_CategoryTree", c.Children)
+                </div>
+            }
+        </li>
+    }
+</ul>

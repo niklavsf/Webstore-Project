@@ -1,0 +1,79 @@
+﻿@model WebstoreProject.Models.Order
+@using WebstoreProject.Models
+
+@{
+    ViewData["Title"] = "Order " + Model.OrderId;
+}
+
+<div class="container my-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="mb-0">Order #@Model.OrderId</h3>
+
+        <a class="btn btn-outline-secondary"
+           asp-controller="Admin"
+           asp-action="Index"
+           asp-route-tab="Orders">Back</a>
+    </div>
+
+    <div class="card p-3 mb-3">
+        <div class="row mb-2">
+            <div class="col-md-3 text-muted">Lietotājs</div>
+            <div class="col-md-9">@Model.UserId</div>
+        </div>
+
+        <div class="row mb-2">
+            <div class="col-md-3 text-muted">Statuss</div>
+            <div class="col-md-9"><strong>@Model.Status</strong></div>
+        </div>
+
+        <div class="row mb-2">
+            <div class="col-md-3 text-muted">Piegāde</div>
+            <div class="col-md-9">@(Model.DeliveryType != null ? Model.DeliveryType.Name : "—")</div>
+        </div>
+
+        <div class="row mb-2">
+            <div class="col-md-3 text-muted">Piegādes maksa</div>
+            <div class="col-md-9">€@Model.DeliveryFee.ToString("0.00")</div>
+        </div>
+
+        <div class="row mb-2">
+            <div class="col-md-3 text-muted">Kopā</div>
+            <div class="col-md-9 fw-bold">€@Model.TotalPrice.ToString("0.00")</div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-3 text-muted">Adrese</div>
+            <div class="col-md-9">@Model.DeliveryAddress</div>
+        </div>
+    </div>
+
+    <div class="card p-3">
+        <h5 class="mb-3">Preces</h5>
+
+        <div class="table-responsive">
+            <table class="table table-sm table-striped align-middle">
+                <thead>
+                    <tr>
+                        <th style="width:80px;">ProductId</th>
+                        <th>Nosaukums</th>
+                        <th style="width:100px;">Daudzums</th>
+                        <th style="width:140px;">Vienuma cena</th>
+                        <th style="width:140px;">Kopā</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (OrderItem i in Model.Items)
+                    {
+                        <tr>
+                            <td>@i.ProductId</td>
+                            <td>@(i.Product != null ? i.Product.Name : "—")</td>
+                            <td>@i.Quantity</td>
+                            <td>€@i.UnitPrice.ToString("0.00")</td>
+                            <td>€@i.LineTotal.ToString("0.00")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

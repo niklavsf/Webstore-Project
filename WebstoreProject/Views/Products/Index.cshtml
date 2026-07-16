@@ -1,0 +1,169 @@
+﻿@model List<WebstoreProject.Models.Product>
+@using WebstoreProject.Models
+@using System.Globalization
+
+@{
+    ViewData["Title"] = "Products";
+
+    Category category = ViewBag.Category as Category;
+    int? categoryId = ViewBag.CategoryId as int?;
+    string q = (ViewBag.Q as string) ?? "";
+    string sort = (ViewBag.Sort as string) ?? "name_asc";
+    decimal? min = ViewBag.Min as decimal?;
+    decimal? max = ViewBag.Max as decimal?;
+    int page = (int)(ViewBag.Page ?? 1);
+    int totalPages = (int)(ViewBag.TotalPages ?? 1);
+}
+
+<div class="container my-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="mb-0">
+            @(category != null ? category.Name : "All products")
+        </h3>
+
+        <div class="text-muted small">
+            @ViewBag.TotalCount items
+        </div>
+    </div>
+
+    <!-- filters -->
+    <form method="get" class="card p-3 mb-4">
+        <input type="hidden" name="categoryId" value="@(categoryId.HasValue ? categoryId.Value.ToString() : "")" />
+
+        <div class="row g-2 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label">Search</label>
+                <input class="form-control" name="q" value="@q" placeholder="Search by name..." />
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">Sort</label>
+                <select class="form-select" name="sort">
+                    <option value="name_asc" selected="@(sort=="name_asc")">Name (A-Z)</option>
+                    <option value="name_desc" selected="@(sort=="name_desc")">Name (Z-A)</option>
+                    <option value="price_asc" selected="@(sort=="price_asc")">Price (low → high)</option>
+                    <option value="price_desc" selected="@(sort=="price_desc")">Price (high → low)</option>
+                </select>
+            </div>
+
+            <div class="col-md-2">
+                <label class="form-label">Min €</label>
+                <input class="form-control" name="min" value="@(min.HasValue ? min.Value.ToString("0.00", CultureInfo.InvariantCulture) : "")" />
+            </div>
+
+            <div class="col-md-2">
+                <label class="form-label">Max €</label>
+                <input class="form-control" name="max" value="@(max.HasValue ? max.Value.ToString("0.00", CultureInfo.InvariantCulture) : "")" />
+            </div>
+
+            <div class="col-md-1 d-grid">
+                <button class="btn btn-primary" type="submit">Go</button>
+            </div>
+        </div>
+    </form>
+
+    <!-- grid -->
+    <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-3">
+        @foreach (Product p in Model)
+        {
+            decimal finalPrice = p.HasDiscount ? p.DiscountedPrice : p.Price;
+
+            <div class="col">
+                <div class="card h-100">
+                    <a asp-controller="Product"
+                       asp-action="Details"
+                       asp-route-id="@p.ProductId"
+                       class="text-decoration-none text-dark">
+                        <img src="@(string.IsNullOrWhiteSpace(p.ImageUrl)
+                            ? "https://via.placeholder.com/260x180?text=Product"
+                            : p.ImageUrl)"
+                             class="card-img-top"
+                             style="height:160px; object-fit:contain; background:#fff;"
+                             alt="@p.Name" />
+
+                        <div class="card-body">
+                            <div class="fw-semibold">@p.Name</div>
+                        </div>
+                    </a>
+
+                    <div class="card-footer bg-white d-flex justify-content-between align-items-center">
+                        @if (p.HasDiscount)
+                        {
+                            <div>
+                                <span class="text-danger fw-bold">€@finalPrice.ToString("0.00")</span>
+                                <span class="text-muted text-decoration-line-through ms-2">€@p.Price.ToString("0.00")</span>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="fw-bold">€@finalPrice.ToString("0.00")</div>
+                        }
+
+                        @if (User.Identity != null && User.Identity.IsAuthenticated && User.IsInRole("Admin"))
+                        {
+                            <a class="btn btn-sm btn-outline-primary"
+                               asp-controller="Admin"
+                               asp-action="EditProduct"
+                               asp-route-id="@p.ProductId">Edit</a>
+                        }
+                        else
+                        {
+                            <form method="post" asp-controller="Cart" asp-action="Add" class="m-0">
+                                <input type="hidden" name="id" value="@p.ProductId" />
+                                <input type="hidden" name="qty" value="1" />
+                                <button class="btn btn-sm btn-danger" type="submit">Pievienot</button>
+                            </form>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- Paging -->
+    @if (totalPages > 1)
+    {
+        <nav class="mt-4">
+            <ul class="pagination">
+
+                <li class="page-item @(page <= 1 ? "disabled" : "")">
+                    <a class="page-link"
+                       asp-action="Index"
+                       asp-route-categoryId="@(categoryId)"
+                       asp-route-q="@q"
+                       asp-route-sort="@sort"
+                       asp-route-min="@(min)"
+                       asp-route-max="@(max)"
+                       asp-route-page="@(page-1)">Prev</a>
+                </li>
+
+                @for (int i = 1; i <= totalPages; i++)
+                {
+                    <li class="page-item @(i == page ? "active" : "")">
+                        <a class="page-link"
+                           asp-action="Index"
+                           asp-route-categoryId="@(categoryId)"
+                           asp-route-q="@q"
+                           asp-route-sort="@sort"
+                           asp-route-min="@(min)"
+                           asp-route-max="@(max)"
+                           asp-route-page="@i">@i</a>
+                    </li>
+                }
+
+                <li class="page-item @(page >= totalPages ? "disabled" : "")">
+                    <a class="page-link"
+                       asp-action="Index"
+                       asp-route-categoryId="@(categoryId)"
+                       asp-route-q="@q"
+                       asp-route-sort="@sort"
+                       asp-route-min="@(min)"
+                       asp-route-max="@(max)"
+                       asp-route-page="@(page+1)">Next</a>
+                </li>
+            </ul>
+        </nav>
+    }
+
+</div>

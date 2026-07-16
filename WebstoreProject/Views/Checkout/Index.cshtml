@@ -1,0 +1,108 @@
+﻿@model WebstoreProject.Controllers.CheckoutPage
+@using WebstoreProject.Models
+
+@{
+    ViewData["Title"] = "Checkout";
+}
+
+<div class="container my-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>
+            <i class="bi bi-bag-check me-2"></i>Pabeigt pirkumu
+        </h2>
+        <a class="btn btn-outline-secondary" asp-controller="Cart" asp-action="Index">
+            <i class="bi bi-arrow-left me-1"></i>Atgriezties uz grozu
+        </a>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-5">
+            <div class="card p-3">
+                <h5 class="mb-3">
+                    <i class="bi bi-truck me-2"></i>Piegāde
+                </h5>
+
+                <form method="post" asp-controller="Checkout" asp-action="PlaceOrder">
+                    <div class="mb-2">
+                        <label class="form-label">
+                            <i class="bi bi-box-seam me-1"></i>Piegāde
+                        </label>
+                        <select class="form-select" name="deliveryTypeId" required>
+                            @foreach (DeliveryType d in Model.DeliveryTypes)
+                            {
+                                <option value="@d.DeliveryTypeId">
+                                    @d.Name (@d.Price.ToString("0.00") €)
+                                </option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="mb-2">
+                        <label class="form-label">
+                            <i class="bi bi-geo-alt me-1"></i>Piegādes adrese
+                        </label>
+                        <textarea class="form-control" name="deliveryAddress" rows="3" required>@Model.DeliveryAddress</textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">
+                            <i class="bi bi-credit-card me-1"></i>Samaksas veids
+                        </label>
+                        <select class="form-select" name="PaymentMethod">
+                            <option value="Cash">Cash</option>
+                            <option value="Card">Card</option>
+                            <option value="Online">Online</option>
+                        </select>
+                    </div>
+
+                    <button class="btn btn-danger btn-lg mt-2" type="submit">
+                        <i class="bi bi-check-circle me-1"></i>Pabeigt pasūtījumu
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div class="col-lg-7">
+            <div class="card p-3">
+                <h5 class="mb-3">
+                    <i class="bi bi-receipt me-2"></i>Pasūtījuma apskats
+                </h5>
+
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th style="width:80px;" class="text-end">Daudzums</th>
+                                <th style="width:120px;" class="text-end">Cena</th>
+                                <th style="width:120px;" class="text-end">Kopsumma</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (WebstoreProject.Controllers.CheckoutLine line in Model.Lines)
+                            {
+                                <tr>
+                                    <td>
+                                        <i class="bi bi-box me-1"></i>@line.Name
+                                    </td>
+                                    <td class="text-end">@line.Qty</td>
+                                    <td class="text-end">€@line.UnitPrice.ToString("0.00")</td>
+                                    <td class="text-end fw-bold">€@line.LineTotal.ToString("0.00")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <hr />
+
+                <div class="d-flex justify-content-between">
+                    <div class="text-muted">
+                        <i class="bi bi-calculator me-1"></i>Kopsumma
+                    </div>
+                    <div class="fw-bold">€@Model.ItemsTotal.ToString("0.00")</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

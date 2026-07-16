@@ -1,0 +1,222 @@
+﻿@model WebstoreProject.Models.ApplicationUser
+@using WebstoreProject.Models
+
+@{
+    ViewData["Title"] = "My Account";
+
+    List<Order> orders = ViewBag.Orders as List<Order> ?? new List<Order>();
+    List<OrderItem> orderItems = ViewBag.OrderItems as List<OrderItem> ?? new List<OrderItem>();
+}
+
+<div class="container my-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="mb-0">
+            <i class="bi bi-person-circle me-2"></i>Mans profils
+        </h2>
+
+        <a class="btn btn-outline-secondary" asp-controller="Home" asp-action="Index">
+            <i class="bi bi-arrow-left me-1"></i>Atgriezties
+        </a>
+    </div>
+
+    <div class="row g-4">
+
+        <div class="col-lg-5">
+            <div class="card p-3">
+                <h5 class="mb-3">
+                    <i class="bi bi-receipt-cutoff me-2"></i>Rēķinu / piegādes dati
+                </h5>
+
+                <form method="post" asp-controller="User" asp-action="UpdateProfile">
+                    <div class="row">
+                        <div class="col-md-6 mb-2">
+                            <label class="form-label">Vārds</label>
+                            <input class="form-control" name="firstName" value="@Model.FirstName" />
+                        </div>
+                        <div class="col-md-6 mb-2">
+                            <label class="form-label">Uzvārds</label>
+                            <input class="form-control" name="lastName" value="@Model.LastName" />
+                        </div>
+                    </div>
+
+                    <div class="mb-2">
+                        <label class="form-label">E-pasts</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                            <input class="form-control" value="@Model.Email" disabled />
+                        </div>
+                    </div>
+
+                    <div class="mb-2">
+                        <label class="form-label">Telefons</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-telephone"></i></span>
+                            <input class="form-control" name="phoneNumber" value="@Model.PhoneNumber" />
+                        </div>
+                    </div>
+
+                    <div class="mb-2">
+                        <label class="form-label">Adrese</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-geo-alt"></i></span>
+                            <input class="form-control" name="addressLine1" value="@Model.Address" />
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-7 mb-2">
+                            <label class="form-label">Pilsēta</label>
+                            <input class="form-control" name="city" value="@Model.City" />
+                        </div>
+                        <div class="col-md-5 mb-2">
+                            <label class="form-label">Pasta indekss</label>
+                            <input class="form-control" name="postalCode" value="@Model.PostalCode" />
+                        </div>
+                    </div>
+
+                    <button class="btn btn-danger mt-2" type="submit">
+                        <i class="bi bi-save me-1"></i>Saglabāt
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div class="col-lg-7">
+            <div class="card p-3">
+                <h5 class="mb-3">
+                    <i class="bi bi-bag-check me-2"></i>Mani pasūtījumi
+                </h5>
+
+                @if (orders.Count == 0)
+                {
+                    <div class="alert alert-info mb-0">
+                        <i class="bi bi-info-circle me-1"></i>Nav pasūtījumu.
+                    </div>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table table-sm align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th style="width:80px;">ID</th>
+                                    <th>Status</th>
+                                    <th>Piegāde</th>
+                                    <th style="width:120px;" class="text-end">Summa</th>
+                                    <th style="width:90px;"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (Order o in orders)
+                                {
+                                    string collapseId = "orderDetails_" + o.OrderId;
+
+                                    <tr>
+                                        <td class="fw-semibold">#@o.OrderId</td>
+                                        <td>
+                                            <span class="badge bg-light text-dark border">
+                                                <i class="bi bi-flag me-1"></i>@o.Status
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <i class="bi bi-truck me-1"></i>@(o.DeliveryType != null ? o.DeliveryType.Name : "—")
+                                        </td>
+                                        <td class="text-end fw-bold">€@o.TotalPrice.ToString("0.00")</td>
+                                        <td class="text-end">
+                                            <button class="btn btn-sm btn-outline-secondary"
+                                                    type="button"
+                                                    data-bs-toggle="collapse"
+                                                    data-bs-target="#@collapseId"
+                                                    aria-expanded="false"
+                                                    aria-controls="@collapseId">
+                                                <i class="bi bi-receipt me-1"></i>Skatīt
+                                            </button>
+                                        </td>
+                                    </tr>
+
+                                    <tr class="border-0">
+                                        <td colspan="5" class="p-0 border-0">
+                                            <div class="collapse" id="@collapseId">
+                                                <div class="p-3 bg-light border-top">
+
+                                                    <div class="d-flex flex-wrap gap-3 mb-2 small text-muted">
+                                                        <div>
+                                                            <i class="bi bi-geo-alt me-1"></i>
+                                                            <span class="fw-semibold text-dark">Adrese:</span>
+                                                            @(string.IsNullOrWhiteSpace(o.DeliveryAddress) ? "—" : o.DeliveryAddress)
+                                                        </div>
+
+                                                        <div>
+                                                            <i class="bi bi-cash-coin me-1"></i>
+                                                            <span class="fw-semibold text-dark">Piegāde:</span>
+                                                            €@o.DeliveryFee.ToString("0.00")
+                                                        </div>
+                                                    </div>
+
+                                                    @{
+                                                        List<OrderItem> itemsForOrder = orderItems
+                                                        .Where(oi => oi.OrderId == o.OrderId)
+                                                        .ToList();
+                                                    }
+
+                                                    @if (itemsForOrder.Count == 0)
+                                                    {
+                                                        <div class="text-muted">Nav pasūtījuma preču.</div>
+                                                    }
+                                                    else
+                                                    {
+                                                        <div class="table-responsive">
+                                                            <table class="table table-sm mb-0">
+                                                                <thead>
+                                                                    <tr class="small text-muted">
+                                                                        <th>Prece</th>
+                                                                        <th style="width:80px;" class="text-end">Daudz.</th>
+                                                                        <th style="width:110px;" class="text-end">Cena</th>
+                                                                        <th style="width:110px;" class="text-end">Kopā</th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                    @foreach (OrderItem it in itemsForOrder)
+                                                                    {
+                                                                        string productName = (it.Product != null && !string.IsNullOrWhiteSpace(it.Product.Name))
+                                                                        ? it.Product.Name
+                                                                        : ("Produkts #" + it.ProductId);
+
+                                                                        <tr>
+                                                                            <td>@productName</td>
+                                                                            <td class="text-end">@it.Quantity</td>
+                                                                            <td class="text-end">€@it.UnitPrice.ToString("0.00")</td>
+                                                                            <td class="text-end fw-semibold">€@it.LineTotal.ToString("0.00")</td>
+                                                                        </tr>
+                                                                    }
+                                                                </tbody>
+                                                                <tfoot>
+                                                                    <tr>
+                                                                        <td colspan="3" class="text-end text-muted">Piegāde</td>
+                                                                        <td class="text-end">€@o.DeliveryFee.ToString("0.00")</td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td colspan="3" class="text-end fw-bold">Kopā</td>
+                                                                        <td class="text-end fw-bold">€@o.TotalPrice.ToString("0.00")</td>
+                                                                    </tr>
+                                                                </tfoot>
+                                                            </table>
+                                                        </div>
+                                                    }
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="small text-muted mt-2">
+                        <i class="bi bi-info-circle me-1"></i>Nospied “Skatīt”, lai atvērtu čeku zem pasūtījuma.
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
